@@ -1,0 +1,95 @@
+import torch
+import torchvision.transforms as transforms
+from model import CSRNet
+import numpy as np
+import cv2
+from matplotlib import cm as c
+from matplotlib import pyplot as plt
+
+
+# Load the model
+model = CSRNet()
+model = model.cuda()
+checkpoint = torch.load('partBmodel_best.pth.tar')
+model.load_state_dict(checkpoint['state_dict'])
+model.eval()
+
+
+# Define transformer to preprocess the input image
+transform = transforms.Compose([
+    transforms.ToTensor(),            # Convert to tensor
+    transforms.Normalize(
+        mean=[0.485, 0.456, 0.406],   # Normalize pixel values
+        std=[0.229, 0.224, 0.225]
+    )
+])
+
+
+# Capture the video
+# cap = cv2.VideoCapture('./ext_testing/videos/istockphoto-1424184696-640_adpp_is.mp4')
+cap = cv2.VideoCapture(0)
+cap.set(3, 1080)
+cap.set(4, 720)
+
+if (cap.isOpened() == False):
+    print("Error opening video")
+
+
+# Define video flags
+alpha = 0.3
+quit_flag = False
+pause_flag = False
+
+
+# Define key press function
+def on_press(event):
+    global quit_flag, pause_flag
+    if event.key in ['q', 'Q']:
+        quit_flag = True
+        print("Quit")
+    elif event.key == ' ':
+        pause_flag = not pause_flag
+        if pause_flag:
+            print("Paused")
+        else:
+            print("Resumed")
+
+
+while cap.isOpened():
+    ret, frame = cap.read()
+    if ret and not quit_flag:
+        # Preprocess the input frame
+        input_frame = transform(frame).unsqueeze(0).cuda()
+
+        # Run the input through the model
+        with torch.no_grad():
+            output = model(input_frame)
+
+        # Plot the output
+        count = output.cpu().sum().item()
+        countText = f"Estimate Count : {int(count)}"
+        heatmap = np.asarray(output.cpu().reshape(
+            output.cpu().shape[2], output.cpu().shape[3]))
+        resized_heatmap = cv2.resize(
+            heatmap, (input_frame.shape[3], input_frame.shape[2]))
+
+        plt.figure("Test", figsize=(16, 9), layout="tight")
+        plt.clf()
+        plt.xticks([])
+        plt.yticks([])
+        plt.text(10, 20, countText, fontsize=16, color='white')
+        plt.imshow(frame, alpha=1-alpha)
+        plt.imshow(resized_heatmap, cmap=c.jet, alpha=alpha)
+        plt.pause(0.00001)
+
+        # Connect key press function to the plot
+        plt.connect('key_press_event', on_press)
+
+        while pause_flag:
+            plt.pause(0.00001)
+            if quit_flag:
+                break
+    else:
+        break
+
+cap.release()
