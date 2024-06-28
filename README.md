@@ -5,14 +5,6 @@ This is the PyTorch version repo for [CSRNet: Dilated Convolutional Neural Netwo
 ## Datasets
 ShanghaiTech Dataset: [Google Drive](https://drive.google.com/open?id=16dhJn7k4FWVwByRsQAEpl9lwjuV03jVI)
 
-## Prerequisites
-We strongly recommend Anaconda as the environment.
-
-Python: 2.7
-
-PyTorch: 0.4.0
-
-CUDA: 9.2
 ## Ground Truth
 
 Please follow the `make_dataset.ipynb ` to generate the ground truth. It shall take some time to generate the dynamic ground truth. Note you need to generate your own json file.
@@ -31,8 +23,6 @@ ShanghaiB MAE: 10.6 [Google Drive](https://drive.google.com/open?id=1zKn6YlLW3Z9
 
 ## References
 
-If you find the CSRNet useful, please cite our paper. Thank you!
-
 ```
 @inproceedings{li2018csrnet,
   title={CSRNet: Dilated convolutional neural networks for understanding the highly congested scenes},
@@ -42,7 +32,6 @@ If you find the CSRNet useful, please cite our paper. Thank you!
   year={2018}
 }
 ```
-Please cite the Shanghai datasets and other works if you use them.
 
 ```
 @inproceedings{zhang2016single,
